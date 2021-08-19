@@ -62,6 +62,9 @@ class Driver:
             return driver
         except Exception:
             return None
+        
+    def get(self, url: str):
+        self.driver.get(url)
 
     def el_selector(self, s: str):
         return self.driver.find_element_by_css_selector(s)
