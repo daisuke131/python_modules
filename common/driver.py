@@ -89,3 +89,6 @@ class Driver:
 
     def script_click(self, s: str):
         return self.driver.execute_script(f"document.querySelector({s}).click()")
+    
+    def quit(self):
+        return self.driver.quit()
