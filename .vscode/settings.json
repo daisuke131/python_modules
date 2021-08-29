@@ -5,6 +5,8 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     },
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true
   },
   "python.venvPath": "${workspaceFolder}/.venv",
   "python.pythonPath": "${workspaceFolder}/.venv/Scripts/python",
