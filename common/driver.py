@@ -13,7 +13,7 @@ BROWSER_NAME = os.getenv("BROWSER")
 
 
 class Driver:
-    def __init__(self, headless_flg: bool):
+    def __init__(self, headless_flg: bool = True):
         self.driver = self.driver_setting(headless_flg)
 
     def driver_setting(self, headless_flg: bool):
