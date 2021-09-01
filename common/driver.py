@@ -92,6 +92,12 @@ class Driver:
 
     def script_click(self, s: str):
         return self.driver.execute_script(f"document.querySelector({s}).click()")
-    
+
+    def save_screenshot(self, path: str, img_name: str):
+        w = self.driver.execute_script("return document.body.scrollWidth;")
+        h = self.driver.execute_script("return document.body.scrollHeight;")
+        self.driver.set_window_size(w, h)
+        self.driver.save_screenshot(path + "/" + img_name)
+
     def quit(self):
         return self.driver.quit()
