@@ -173,7 +173,7 @@ class Gspread:
         return self.worksheet.title
 
     def fetch_img_function(self, img_url: str) -> str:
-        return "=IMAGE(" + f'"{img_url}",4,100,100)'
+        return f'=IMAGE("{img_url}",4,100,100)'
 
     def set_df(self):
         df = pd.DataFrame(self.worksheet.get_all_values())
