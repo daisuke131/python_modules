@@ -149,7 +149,7 @@ class Gspread:
         self.worksheet.update_cell(row, column, val)
 
     def append_row(self, val: list) -> None:
-        self.worksheet.append_row(val)
+        self.worksheet.append_row(val, value_input_option="USER_ENTERED")
 
     def open_sheet_by_(self, file_id: str):
         try:
@@ -171,6 +171,9 @@ class Gspread:
 
     def fetch_sheet_name(self) -> str:
         return self.worksheet.title
+
+    def fetch_img_function(self, img_url: str) -> str:
+        return "=IMAGE(" + f'"{img_url}",4,100,100)'
 
     def set_df(self):
         df = pd.DataFrame(self.worksheet.get_all_values())
