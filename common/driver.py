@@ -92,11 +92,19 @@ class Driver:
     def script_click(self, s: str):
         return self.driver.execute_script(f"document.querySelector({s}).click()")
 
+    # 画像は基本pngでjpgで保存しようとするエラーメッセージが出るが保存される。
     def save_screenshot(self, path: str, img_name: str):
         w = self.driver.execute_script("return document.body.scrollWidth;")
         h = self.driver.execute_script("return document.body.scrollHeight;")
         self.driver.set_window_size(w, h)
         self.driver.save_screenshot(path + "/" + img_name)
+
+    def save_img(self, el, path: str, img_name: str):
+        # img_elm=driver.find_element_by_css_selector("img")
+        # save_img(img_elm, path, "~~~~.png")
+        path = path + "/" + img_name
+        with open(path, "wb") as f:
+            f.write(el.screenshot_as_png)
 
     def quit(self):
         return self.driver.quit()
