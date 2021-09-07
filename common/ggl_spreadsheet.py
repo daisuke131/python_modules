@@ -1,3 +1,5 @@
+from typing import Any
+
 import gspread
 import pandas as pd
 from gspread.models import Spreadsheet, Worksheet
@@ -9,7 +11,8 @@ from common.util import fetch_absolute_path, fetch_env
 
 JASON_FILE_NAME = fetch_env("JASON_FILE_NAME")
 JSON_PATH = fetch_absolute_path(JASON_FILE_NAME)
-SPREAD_SHEET_KEY = fetch_env("SPREAD_SHEET_KEY")
+SHARE_FOLDER_ID = fetch_env("FOLDER_ID")  # 親フォルダのfileid
+SPREAD_SHEET_ID = fetch_env("SHEET_ID")  # 検索ワードのスプレッドシートID
 
 
 class Gspread:
@@ -17,26 +20,61 @@ class Gspread:
         self.workbook: Spreadsheet
         self.worksheet: Worksheet
         self.drive: GoogleDrive
-        self.credentials = self.fetch_credentials()
-        # self.folder_name: str
-        self.new_folder_id: str
-        self.df = []
+        self.credentials: Any
+        # 他のフォルダのfile_idはメインの方で持たす
+        # なので新たにフォルダを作ったときフォルダのファイルIDを返す
+        self.parent_folder_id: str = SHARE_FOLDER_ID
+        self.search_sheet_id: str = SPREAD_SHEET_ID
+        self.set_gspread()
 
-    def fetch_credentials(self):
+    def set_gspread(self):
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
         ]
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+        self.credentials = ServiceAccountCredentials.from_json_keyfile_name(
             JASON_FILE_NAME, scope
         )
-        return credentials
-
-    def create_folder(self, folder_name: str) -> None:
         gauth = GoogleAuth()
         gauth.credentials = self.credentials
         self.drive = GoogleDrive(gauth)
-        folder_id = "1aRDY5vSQRVz3hXlWrPr1xHEtv4Ilijz3"
+
+    def to_folder_by_folder_name(
+        self, folder_id: str, folder_name: str
+    ) -> list[str, bool]:
+        # folderに移動するというよりfile_idを取得している
+        is_create_folder: bool = True
+        new_folder_id: str
+        try:
+            files = self.drive.ListFile(
+                {"q": f'"{folder_id}" in parents and trashed=false'}
+            ).GetList()
+            for file in files:
+                if folder_name == file["title"]:
+                    is_create_folder = False
+                    # フォルダID指定
+                    new_folder_id = file["id"]
+                    break
+            if is_create_folder:
+                f_folder = self.drive.CreateFile(
+                    {
+                        "title": folder_name,
+                        "parents": [{"id": folder_id}],
+                        "mimeType": "application/vnd.google-apps.folder",
+                    }
+                )
+                f_folder.Upload()
+                new_folder_id = f_folder["id"]
+            # 新しくフォルダを作成したかを返す
+            return new_folder_id, is_create_folder
+        except Exception as e:
+            print(e)
+
+    def to_more_folder(self, folder_id: str, folder_name: str) -> None:
+        """
+        作成したフォルダ(folder_id)の中にさらにフォルダを作る
+        folder_idは新しく作られたフォルダIDに上書きされる
+        """
         f_folder = self.drive.CreateFile(
             {
                 "title": folder_name,
@@ -45,26 +83,64 @@ class Gspread:
             }
         )
         f_folder.Upload()
-        self.new_folder_id = self.drive.ListFile(
-            {"q": f'title = "{folder_name}"'}
-        ).GetList()[0]["id"]
+        return f_folder["id"]
 
-    def create_spreadsheet(self, file_name: str) -> None:
-        f = self.drive.CreateFile(
-            {
-                "title": file_name,
-                "mimeType": "application/vnd.google-apps.spreadsheet",
-                "parents": [{"id": self.new_folder_id}],
-            }
-        )
-        f.Upload()
+    def delete_folder(self, folder_name: str):
+        folder_id = self.drive.ListFile({"q": f'title = "{folder_name}"'}).GetList()[0][
+            "id"
+        ]
+        f_file = self.drive.CreateFile({"id": folder_id})
+        f_file.Delete()
+
+    def to_spreadsheet(self, folder_id: str, file_name: str) -> bool:
+        # 名前でbookを指定してなければ作る
         gc = gspread.authorize(self.credentials)
-        # ワークシート指定
-        self.workbook = gc.open_by_key(f["id"])
-        self.worksheet = self.workbook.sheet1
+        is_create_workbook = True
+        try:
+            files = self.drive.ListFile(
+                {"q": f'"{folder_id}" in parents and trashed=false'}
+            ).GetList()
+            for file in files:
+                if file_name == file["title"]:
+                    is_create_workbook = False
+                    # ワークブック指定
+                    self.workbook = gc.open_by_key(file["id"])
+                    break
+            if is_create_workbook:
+                file = self.drive.CreateFile(
+                    {
+                        "title": file_name,
+                        "mimeType": "application/vnd.google-apps.spreadsheet",
+                        "parents": [{"id": folder_id}],
+                    }
+                )
+                file.Upload()
+                # ワークブック指定
+                self.workbook = gc.open_by_key(file["id"])
+            # ワークシート１シート目指定
+            self.worksheet = self.workbook.get_worksheet(0)
+            # 新しくworkbookを作成したかを返す
+            return is_create_workbook
+        except Exception as e:
+            print(e)
 
-    def save_file(self, local_img_path: str, file_name: str) -> None:
-        f = self.drive.CreateFile({"parents": [{"id": self.new_folder_id}]})
+    def add_worksheet(self, sheet_name: str):
+        self.worksheet = self.workbook.add_worksheet(
+            title=sheet_name, rows=100, cols=20
+        )
+
+    def rename_sheet(self, new_sheet_name: str):
+        self.worksheet.update_title(new_sheet_name)
+
+    def change_sheet_by_num(self, sheet_num: int) -> None:
+        # シートは0~
+        self.worksheet = self.workbook.get_worksheet(sheet_num)
+
+    def change_sheet_by_name(self, sheet_name: str) -> None:
+        self.worksheet = self.workbook.worksheet(sheet_name)
+
+    def save_file(self, folder_id: str, local_img_path: str, file_name: str) -> None:
+        f = self.drive.CreateFile({"parents": [{"id": folder_id}]})
         f.SetContentFile(local_img_path + "/" + file_name)
         f["title"] = file_name
         f.Upload()
@@ -75,26 +151,35 @@ class Gspread:
     def append_row(self, val: list) -> None:
         self.worksheet.append_row(val)
 
-    def connect_gspread(self):
+    def open_sheet_by_(self, file_id: str):
         try:
             gc = gspread.authorize(self.credentials)
-            workbook = gc.open_by_key(SPREAD_SHEET_KEY)
-            return workbook
+            self.workbook = gc.open_by_key(file_id)
+            # ワークシート１シート目指定
+            self.worksheet = self.workbook.get_worksheet(0)
         except Exception:
             print("Googleスプレッドシートを読み込めませんでした。")
-            return None
 
-    def read_sheet(self, sheet_num: int):
-        # 0番目が一枚目のシート
-        self.worksheet = self.workbook.get_worksheet(sheet_num)
-        return self.worksheet
+    def fetch_sheet_count(self) -> int:
+        return len(self.workbook.worksheets())
 
-    # def read_sheet(self, workbook, sheet_name: str):
-    #     self.worksheet = self.workbook.worksheet(sheet_name)
+    def fetch_sheet_names(self) -> list:
+        sheet_names = []
+        for sh in self.workbook.worksheets():
+            sheet_names.append(sh.title)
+        return sheet_names
+
+    def fetch_sheet_name(self) -> str:
+        return self.worksheet.title
 
     def set_df(self):
-        self.df = pd.DataFrame(self.worksheet.get_all_values())
-        self.df.columns = list(self.df.loc[0, :])
-        self.df.drop(0, inplace=True)
-        self.df.reset_index(inplace=True)
-        self.df.drop("index", axis=1, inplace=True)
+        df = pd.DataFrame(self.worksheet.get_all_values())
+        # ヘッダーが一行目データになっているのでちゃんとヘッダーにする
+        df.columns = list(df.loc[0, :])
+        df.drop(0, inplace=True)
+        df.reset_index(inplace=True)
+        df.drop("index", axis=1, inplace=True)
+        return df
+
+    def fetch_wb_url(self):
+        return self.workbook.url + "/edit?usp=sharing"
