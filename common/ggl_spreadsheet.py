@@ -149,6 +149,7 @@ class Gspread:
         self.worksheet.update_cell(row, column, val)
 
     def append_row(self, val: list) -> None:
+        # value_input_option="USER_ENTERED"全て文字列として書き込みのを防止
         self.worksheet.append_row(val, value_input_option="USER_ENTERED")
 
     def open_sheet_by_(self, file_id: str):
