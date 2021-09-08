@@ -1,4 +1,4 @@
-from logger import set_logger
+from common.logger import set_logger
 
 logger = set_logger()
 
