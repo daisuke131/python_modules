@@ -1,26 +1,34 @@
 {
   "[python]": {
-    "editor.tabSize": 4,
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     },
-    "files.trimFinalNewlines": true
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true,
   },
   "python.venvPath": "${workspaceFolder}/.venv",
   "python.pythonPath": "${workspaceFolder}/.venv/Scripts/python",
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
+  "python.linting.lintOnSave": true,
   "python.formatting.provider": "black",
   "python.linting.flake8Enabled": true,
   "python.linting.flake8Args": [
     "--max-line-length",
     "88",
   ],
-  "python.linting.lintOnSave": true,
-  "python.linting.mypyEnabled": true,
-  "python.linting.mypyArgs": [
-    "--config-file",
-    "mypy.ini"
-  ],
+  // "python.linting.mypyEnabled": true,
+  // "python.linting.mypyArgs": [
+  //   "--config-file",
+  //   "mypy.ini"
+  // ],
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportOptionalMemberAccess": "none",
+  }
 }
