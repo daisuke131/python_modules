@@ -18,3 +18,5 @@ class Soup:
 
     def select_one(self, selector: str):
         return self.soup.select_one(selector)
+    
+    # .attrs["href"]
