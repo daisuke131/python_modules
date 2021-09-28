@@ -13,8 +13,8 @@ class Soup:
         resp = requests.get(url, headers=headers)
         return BeautifulSoup(resp.text, "html.parser")
 
-    def selects(self, selector: str):
+    def select(self, selector: str):
         return self.soup.select(selector)
 
-    def select(self, selector: str):
+    def select_one(self, selector: str):
         return self.soup.select_one(selector)
