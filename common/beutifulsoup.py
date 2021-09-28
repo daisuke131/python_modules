@@ -11,12 +11,13 @@ class Soup:
     def fetch_soup(self, url: str):
         headers = {"User-Agent": fetch_user_agent()}
         resp = requests.get(url, headers=headers)
-        return BeautifulSoup(resp.text, "html.parser")
+        return BeautifulSoup(resp.content, "html.parser")
+        # return BeautifulSoup(resp.text, "html.parser")
 
     def select(self, selector: str):
         return self.soup.select(selector)
 
     def select_one(self, selector: str):
         return self.soup.select_one(selector)
-    
+
     # .attrs["href"]
