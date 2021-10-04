@@ -65,6 +65,7 @@ class Driver:
     def get(self, url: str) -> None:
         self.driver.get(url)
 
+    # .get_attribute("href")
     def el_selector(self, s: str):
         return self.driver.find_element_by_css_selector(s)
 
