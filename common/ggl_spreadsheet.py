@@ -7,10 +7,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
-from common.util import fetch_absolute_path, fetch_env
+from common.util import fetch_env
 
 JASON_FILE_NAME = fetch_env("JASON_FILE_NAME")
-JSON_PATH = fetch_absolute_path(JASON_FILE_NAME)
 SHARE_FOLDER_ID = fetch_env("FOLDER_ID")  # 親フォルダのfileid
 SPREAD_SHEET_ID = fetch_env("SHEET_ID")  # 検索ワードのスプレッドシートID
 
