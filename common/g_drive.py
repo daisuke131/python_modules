@@ -16,8 +16,7 @@ SPREAD_SHEET_ID = fetch_env("SHEET_ID")  # 検索ワードのスプレッドシ�
 
 class Gspread:
     def __init__(self) -> None:
-        self.workbook: Spreadsheet
-        self.worksheet: Worksheet
+        self.worksheet = None
         self.drive: GoogleDrive
         self.credentials: Any
         # 他のフォルダのfile_idはメインの方で持たす
@@ -25,18 +24,35 @@ class Gspread:
         self.parent_folder_id: str = SHARE_FOLDER_ID
         self.search_sheet_id: str = SPREAD_SHEET_ID
         self.set_gspread()
+        self.workbook = self.fetch_workbook()
+        self.fetch_sheet(0)
+        
 
     def set_gspread(self):
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
         ]
+
         self.credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            JASON_FILE_NAME, scope
+            os.path.join(fetch_absolute_path(), JASON_FILE_NAME), scope
         )
         gauth = GoogleAuth()
         gauth.credentials = self.credentials
         self.drive = GoogleDrive(gauth)
+    
+    def fetch_workbook(self):
+        try:
+            gc = gspread.authorize(self.credentials)
+            workbook = gc.open_by_key(SPREAD_SHEET_KEY)
+            return workbook
+        except Exception:
+            print("Googleスプレッドシートを読み込めませんでした。")
+            # return None
+           
+    def fetch_sheet(self, sheet_num: int):
+        # 0が一枚目のシート
+        self.worksheet = self.workbook.get_worksheet(sheet_num)
 
     def to_folder_by_folder_name(
         self, folder_id: str, folder_name: str
