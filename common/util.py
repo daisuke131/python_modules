@@ -26,11 +26,17 @@ def fetch_user_agent() -> str:
 def filename_creation(filename: str) -> str:
     return "{filename}_{datetime}".format(filename=filename, datetime=hyphen_now())
 
+def fetch_absolute_path() -> str:
+    dir = os.getcwd()
+    # # Macexe用
+    # dirs = sys.executable.split("/")
+    # del dirs[-1]
+    # dir = ("/").join(dirs)
+    # #########
+    return dir
+
 
 def fetch_env(env_key: str) -> str:
-    load_dotenv()
-    return os.getenv(env_key)
-
-
-def fetch_absolute_path(folder_name: str) -> str:
-    return os.path.join(os.getcwd(), folder_name)
+    dir = os.path.join(fetch_absolute_path(), ".env")
+    load_dotenv(dir)
+    return os.environ[env_key]
