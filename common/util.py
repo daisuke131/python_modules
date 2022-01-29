@@ -27,12 +27,14 @@ def filename_creation(filename: str) -> str:
     return "{filename}_{datetime}".format(filename=filename, datetime=hyphen_now())
 
 def fetch_absolute_path() -> str:
-    dir = os.getcwd()
-    # # Macexe用
-    # dirs = sys.executable.split("/")
-    # del dirs[-1]
-    # dir = ("/").join(dirs)
-    # #########
+    if "python" in sys.executable:
+        dir = os.getcwd()
+    else:
+        # Macexe用
+        dirs = sys.executable.split("/")
+        del dirs[-1]
+        dir = ("/").join(dirs)
+        #########
     return dir
 
 
