@@ -10,7 +10,7 @@
     "files.insertFinalNewline": true,
   },
   "python.venvPath": "${workspaceFolder}/.venv",
-  "python.pythonPath": "${workspaceFolder}/.venv/Scripts/python",
+  "python.pythonPath": "${workspaceFolder}/.venv/bin/python3.9",
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.linting.lintOnSave": true,
@@ -20,15 +20,15 @@
     "--max-line-length",
     "88",
   ],
-  // "python.linting.mypyEnabled": true,
-  // "python.linting.mypyArgs": [
-  //   "--config-file",
-  //   "mypy.ini"
-  // ],
-  "python.languageServer": "Pylance",
-  "python.analysis.typeCheckingMode": "basic",
-  "python.analysis.diagnosticSeverityOverrides": {
-    "reportMissingImports": "none",
-    "reportOptionalMemberAccess": "none",
-  }
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyArgs": [
+    "--config-file",
+    "mypy.ini"
+  ],
+  // "python.languageServer": "Pylance",
+  // "python.analysis.typeCheckingMode": "basic",
+  // "python.analysis.diagnosticSeverityOverrides": {
+  //   "reportMissingImports": "none",
+  //   "reportOptionalMemberAccess": "none",
+  // }
 }

@@ -1,15 +1,12 @@
 import os
-from subprocess import CREATE_NO_WINDOW
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.utils import ChromeType
 
 from common.util import fetch_user_agent
 
-BROWSER_NAME: str = "chrome"
+# from subprocess import CREATE_NO_WINDOW
 
 
 class Driver:
@@ -19,10 +16,7 @@ class Driver:
     def driver_setting(self, headless_flg: bool):
         user_agent_random = fetch_user_agent()
         # ドライバーの読み込み
-        if "firefox" in BROWSER_NAME:
-            options = webdriver.FirefoxOptions()
-        else:
-            options = webdriver.ChromeOptions()
+        options = webdriver.ChromeOptions()
 
         # ヘッドレスモードの設定
         if os.name == "posix" or headless_flg:  # Linux　➙　本番環境のためHeadless
@@ -46,15 +40,10 @@ class Driver:
         # 画像を読み込まないで軽くする
         # options.add_argument("--blink-settings=imagesEnabled=false")
         service = Service(ChromeDriverManager().install())
-        service.creationflags = CREATE_NO_WINDOW
+        # service.creationflags = CREATE_NO_WINDOW #exe化後ターミナルを開かないようにする(windowsのみ)
 
         try:
-            if "firefox" in BROWSER_NAME:
-                driver = webdriver.Firefox(service=service, options=options)
-            elif "chromium" in BROWSER_NAME:
-                driver = webdriver.Chrome(service=service, options=options)
-            else:
-                driver = webdriver.Chrome(service=service, options=options)
+            driver = webdriver.Chrome(service=service, options=options)
             return driver
         except Exception:
             return None
